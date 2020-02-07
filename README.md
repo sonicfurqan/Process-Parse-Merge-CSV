@@ -19,6 +19,7 @@
 2. DROPEMPTYHEADERS : if it is set to True column's that does not have any value are removed from csv
 3. DATACLEANUP : if it is set to True values given in "VALUES_TO_BE_REPLACED_BY_NULL" array are replaced by null
 4. DROPEMPTYROWS : if it is set to True any empty row from csv is removed
+6. OVERRIDE_MASTERDATA: if it is set to True. If data is present in child that will be over written in master record
 
 # Run
 py merge.py
