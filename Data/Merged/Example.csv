@@ -1,6 +1,6 @@
 Id,Name,Email,EXT_Id,SOURCE
 6,Gb,,,Master
-2,Bb,b@b.con,2,Master/Child
+2,Bb,b@b.com,2,Master/Child
 3,Cb,C@b.com,3,Master/Child
 4,Db,D@b.com,4,Master/Child
 8,,F@b.com,,Master
