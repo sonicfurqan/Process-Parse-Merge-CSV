@@ -179,10 +179,11 @@ Duplicate_Not_Found_error = 0
 for master_id in MASTER_RECORDS.index:
     CHUNK_INDEX = CHUNK_INDEX + 1
     isMatch = True
+    master_record_ref = MASTER_RECORDS.loc[master_id]
     try:
         isMatch = True
-        master_record_ref = MASTER_RECORDS.loc[master_id]
         child_record_ref = CHILD_RECORDS.loc[master_id]
+        CHILD_RECORDS.drop(child_record_ref[CHILD_ORG_REF_FIELD], axis=0, inplace=True)
         # checking if master record column is empty then copy the value from the child
         for field_name in MASTER_RECORDS.columns:
             if MERGHEADERS:
@@ -218,11 +219,15 @@ for master_id in MASTER_RECORDS.index:
     )
     MERGED_RECORDS = MERGED_RECORDS.append(master_record_ref, ignore_index=True)
     # writing data to csv in chunks of 200 records to reduce memory
-    if CHUNK_INDEX == len(MASTER_RECORDS.index) - 1:
+    if CHUNK_INDEX == len(MASTER_RECORDS.index):
         print("\n")
         print("CHUNK COUNT => %s " % CHUNK_INDEX)
         print("Refrence not Found Count %s" % Duplicate_Not_Found_error)
+        print("Remaing Child records %s" % len(CHILD_RECORDS))
         Duplicate_Not_Found_error = 0
+        temp = {FIELD_NAME_TO_STORE_SOURCE: "Child"}
+        CHILD_RECORDS = CHILD_RECORDS.assign(**temp)
+        MERGED_RECORDS = MERGED_RECORDS.append(CHILD_RECORDS, ignore_index=True)
         export(MERGED_RECORDS)
         MERGED_RECORDS = MERGED_RECORDS.iloc[0:0]
         check_memory(CHUNK_INDEX)

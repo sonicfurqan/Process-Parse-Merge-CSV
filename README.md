@@ -1,5 +1,5 @@
 # Merge CSV
- Merging and updating csv script
+ Merging csv by using outer join  
 
 # Setup
 1. Place master csv in Master Folder 
