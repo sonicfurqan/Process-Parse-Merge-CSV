@@ -1,9 +1,11 @@
 # importing dependency
 import pandas as pd
+import numpy as np
+
 import psutil
 import gc
-import dask.dataframe as dd
-import numpy as np
+import os
+
 
 # importing fileds
 from support import (
@@ -12,6 +14,7 @@ from support import (
     CHILD_KEY_FIELD,
     VALUES_TO_BE_REPLACED_BY_NULL,
     COLOUM_NAME_WHERE_RECORD_SOURCE_TO_BE_STORED,
+    MERGE,
 )
 
 # declaring variables
@@ -20,6 +23,7 @@ VALUES_TO_BE_REPLACED_BY_NAN = VALUES_TO_BE_REPLACED_BY_NULL
 PARENT_ORG_UNIQUE_FILED = PARENT_KEY_FILED
 CHILD_ORG_REF_FIELD = CHILD_KEY_FIELD
 FIELD_NAME_TO_STORE_SOURCE = COLOUM_NAME_WHERE_RECORD_SOURCE_TO_BE_STORED
+MERGE_TYPE = MERGE
 # parameters for processing csv
 MERGHEADERS = True
 DROPEMPTYHEADERS = True
@@ -74,6 +78,13 @@ def printProgressBar(
         print()
 
 
+def create_folder():
+    os.makedirs(FOLDER + "Master", exist_ok=True)
+    os.makedirs(FOLDER + "Child", exist_ok=True)
+    os.makedirs(FOLDER + "Merged", exist_ok=True)
+    os.makedirs(FOLDER + "Log", exist_ok=True)
+
+
 def merge_header(master_csv, child_csv):
     master_colums = master_csv.columns
     child_colums = child_csv.columns
@@ -93,6 +104,7 @@ def merge_header(master_csv, child_csv):
 
 
 def read(object_name):
+    create_folder()
     master_csv = FOLDER + "Master/" + object_name + ".csv"
     child_csv = FOLDER + "Child/" + object_name + ".csv"
     check_memory(0)
@@ -144,6 +156,7 @@ def log(csv_data_frame):
     )
 
 
+# Main Program
 MASTER_RECORDS_UNIQUES, MASTER_RECORDS, CHILD_RECORDS_UNIQUES, CHILD_RECORDS = read(
     Object
 )
@@ -157,9 +170,9 @@ print("Child rows count=>", len(CHILD_RECORDS))
 print("--------------------------")
 
 # Save Uniques to csv
-
-MERGED_RECORDS = MERGED_RECORDS.append(MASTER_RECORDS_UNIQUES, ignore_index=True)
-MERGED_RECORDS = MERGED_RECORDS.append(CHILD_RECORDS_UNIQUES, ignore_index=True)
+if MERGE_TYPE == "outer":
+    MERGED_RECORDS = MERGED_RECORDS.append(MASTER_RECORDS_UNIQUES, ignore_index=True)
+    MERGED_RECORDS = MERGED_RECORDS.append(CHILD_RECORDS_UNIQUES, ignore_index=True)
 MERGED_RECORDS.to_csv(FOLDER + "Merged/" + Object + ".csv", index=False, mode="w")
 LOG.to_csv(FOLDER + "Log/" + Object + ".csv", index=False, mode="w")
 # reset dataframe as we dont need saved records in memory
@@ -222,11 +235,16 @@ for master_id in MASTER_RECORDS.index:
         )
         log(LOG)
         LOG = LOG.iloc[0:0]
-
-    master_record_ref[FIELD_NAME_TO_STORE_SOURCE] = (
-        isMatch and "Master/Child" or "Master"
-    )
-    MERGED_RECORDS = MERGED_RECORDS.append(master_record_ref, ignore_index=True)
+    if MERGE_TYPE == "outer":
+        master_record_ref[FIELD_NAME_TO_STORE_SOURCE] = (
+            isMatch and "Master/Child" or "Master"
+        )
+        MERGED_RECORDS = MERGED_RECORDS.append(master_record_ref, ignore_index=True)
+    elif isMatch:
+        master_record_ref[FIELD_NAME_TO_STORE_SOURCE] = (
+            isMatch and "Master/Child" or "Master"
+        )
+        MERGED_RECORDS = MERGED_RECORDS.append(master_record_ref, ignore_index=True)
     # writing data to csv in chunks of 200 records to reduce memory
     if CHUNK_INDEX == len(MASTER_RECORDS.index):
         print("\n")
@@ -234,9 +252,10 @@ for master_id in MASTER_RECORDS.index:
         print("Refrence not Found Count %s" % Duplicate_Not_Found_error)
         print("Remaing Child records %s" % len(CHILD_RECORDS))
         Duplicate_Not_Found_error = 0
-        temp = {FIELD_NAME_TO_STORE_SOURCE: "Child"}
-        CHILD_RECORDS = CHILD_RECORDS.assign(**temp)
-        MERGED_RECORDS = MERGED_RECORDS.append(CHILD_RECORDS, ignore_index=True)
+        if MERGE_TYPE == "outer":
+            temp = {FIELD_NAME_TO_STORE_SOURCE: "Child"}
+            CHILD_RECORDS = CHILD_RECORDS.assign(**temp)
+            MERGED_RECORDS = MERGED_RECORDS.append(CHILD_RECORDS, ignore_index=True)
         export(MERGED_RECORDS)
         MERGED_RECORDS = MERGED_RECORDS.iloc[0:0]
         check_memory(CHUNK_INDEX)
