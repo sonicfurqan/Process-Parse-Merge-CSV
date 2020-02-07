@@ -25,6 +25,7 @@ MERGHEADERS = True
 DROPEMPTYHEADERS = True
 DATACLEANUP = True
 DROPEMPTYROWS = True
+OVERRIDE_MASTERDATA = False
 
 FOLDER = "Data/"
 CHUNK = 200
@@ -179,26 +180,35 @@ Duplicate_Not_Found_error = 0
 for master_id in MASTER_RECORDS.index:
     CHUNK_INDEX = CHUNK_INDEX + 1
     isMatch = True
+    master_record_ref = MASTER_RECORDS.loc[master_id]
     try:
         isMatch = True
-        master_record_ref = MASTER_RECORDS.loc[master_id]
         child_record_ref = CHILD_RECORDS.loc[master_id]
+        CHILD_RECORDS.drop(child_record_ref[CHILD_ORG_REF_FIELD], axis=0, inplace=True)
         # checking if master record column is empty then copy the value from the child
         for field_name in MASTER_RECORDS.columns:
             if MERGHEADERS:
-                if pd.isnull(master_record_ref[field_name]) & pd.notnull(
-                    child_record_ref[field_name]
-                ):
-                    master_record_ref[field_name] = child_record_ref[field_name]
+                if OVERRIDE_MASTERDATA:
+                    if pd.notnull(child_record_ref[field_name]):
+                        master_record_ref[field_name] = child_record_ref[field_name]
+                else:
+                    if pd.isnull(master_record_ref[field_name]) & pd.notnull(
+                        child_record_ref[field_name]
+                    ):
+                        master_record_ref[field_name] = child_record_ref[field_name]
             elif (
                 field_name
                 in MASTER_RECORDS.columns & field_name
                 in CHILD_RECORDS.columns
             ):
-                if pd.isnull(master_record_ref[field_name]) & pd.notnull(
-                    child_record_ref[field_name]
-                ):
-                    master_record_ref[field_name] = child_record_ref[field_name]
+                if OVERRIDE_MASTERDATA:
+                    if pd.notnull(child_record_ref[field_name]):
+                        master_record_ref[field_name] = child_record_ref[field_name]
+                    else:
+                        if pd.isnull(master_record_ref[field_name]) & pd.notnull(
+                            child_record_ref[field_name]
+                        ):
+                            master_record_ref[field_name] = child_record_ref[field_name]
     except KeyError:
         isMatch = False
         Duplicate_Not_Found_error = Duplicate_Not_Found_error + 1
@@ -218,11 +228,15 @@ for master_id in MASTER_RECORDS.index:
     )
     MERGED_RECORDS = MERGED_RECORDS.append(master_record_ref, ignore_index=True)
     # writing data to csv in chunks of 200 records to reduce memory
-    if CHUNK_INDEX == len(MASTER_RECORDS.index) - 1:
+    if CHUNK_INDEX == len(MASTER_RECORDS.index):
         print("\n")
         print("CHUNK COUNT => %s " % CHUNK_INDEX)
         print("Refrence not Found Count %s" % Duplicate_Not_Found_error)
+        print("Remaing Child records %s" % len(CHILD_RECORDS))
         Duplicate_Not_Found_error = 0
+        temp = {FIELD_NAME_TO_STORE_SOURCE: "Child"}
+        CHILD_RECORDS = CHILD_RECORDS.assign(**temp)
+        MERGED_RECORDS = MERGED_RECORDS.append(CHILD_RECORDS, ignore_index=True)
         export(MERGED_RECORDS)
         MERGED_RECORDS = MERGED_RECORDS.iloc[0:0]
         check_memory(CHUNK_INDEX)
