@@ -41,19 +41,15 @@ def merge_header(master_csv, child_csv):
     master_colums = master_csv.columns
     child_colums = child_csv.columns
     unique_in_child = child_colums[~child_colums.isin(master_colums)]
-    unique_in_master = master_colums[~master_colums.isin(child_colums)]
     print("---------Header Details-----------------")
     print("%s columns form child are added to master" % len(unique_in_child))
-    print("%s columns form master are added to child" % len(unique_in_master))
     print("--------------------------")
     unique_colum_for_master = pd.DataFrame(
         columns=unique_in_child, dtype=object)
-    unique_colum_for_child = pd.DataFrame(
-        columns=unique_in_master, dtype=object)
 
     return (
         pd.concat([master_csv, unique_colum_for_master], axis=1),
-        pd.concat([child_csv, unique_colum_for_child], axis=1),
+        child_csv
     )
 
 
@@ -165,10 +161,9 @@ child_coluums = CHILD_RECORDS.columns
 
 for master_id in MASTER_RECORDS.index:
     CHUNK_INDEX = CHUNK_INDEX + 1
-    isMatch = True
     master_record_ref = MASTER_RECORDS.loc[master_id]
+    isMatch = True
     try:
-        isMatch = True
         child_record_ref = CHILD_RECORDS.loc[master_id]
         if type(child_record_ref) == pd.core.frame.DataFrame:
             child_record_ref = child_record_ref.iloc[0, :]
@@ -176,15 +171,8 @@ for master_id in MASTER_RECORDS.index:
         CHILD_RECORDS.drop(
             child_record_ref[CHILD_ORG_REF_FIELD], axis=0, inplace=True)
         # comparing each cell value based on header
-        for field_name in master_coloums:
-            if MERGEHEADERS & pd.notnull(child_record_ref[field_name]):
-                if OVERRIDE_MASTERDATA:
-                    master_record_ref[field_name] = child_record_ref[field_name]
-                elif pd.isnull(master_record_ref[field_name]):
-                    master_record_ref[field_name] = child_record_ref[field_name]
-            elif (field_name
-                  in child_coluums
-                  ) & pd.notnull(child_record_ref[field_name]):
+        for field_name in child_coluums:
+            if pd.notnull(child_record_ref[field_name]):
                 if OVERRIDE_MASTERDATA:
                     master_record_ref[field_name] = child_record_ref[field_name]
                 elif pd.isnull(master_record_ref[field_name]):
