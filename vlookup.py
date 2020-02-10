@@ -1,4 +1,12 @@
 # importing dependency
+
+import pandas as pd
+import numpy as np
+
+import time
+import sys
+
+
 from parameters import (
     VALUES_TO_BE_REPLACED_BY_NULL,
     TARGET_FILE_NAME,
@@ -7,10 +15,6 @@ from parameters import (
     LOOKUP_FILE_KEY_COLUMN_NAME,
     LOOKUP_FILE_VALUE_COLUMN_NAME,
 )
-import pandas as pd
-import numpy as np
-
-import time
 
 # importing methods
 from utility import check_memory, create_lookup_folders, printProgressBar, FOLDER, CHUNK
@@ -74,6 +78,12 @@ def read(master_file_name, child_file_name):
         child_data.set_index(LOOKUP_FILE_KEY_COLUMN_NAME, drop=False))
 
 
+if len(sys.argv) == 6:
+    TARGET_FILE_NAME, TARGET_FILE_KEY_COLUMN_NAME, LOOKUP_FILE_NAME, LOOKUP_FILE_KEY_COLUMN_NAME, LOOKUP_FILE_VALUE_COLUMN_NAME = sys.argv[
+        1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]
+
+
+# main program
 MASTER_NULL_RECORDS, MASTER_RECORDS, LOOKUP_RECORDS = read(
     TARGET_FILE_NAME, LOOKUP_FILE_NAME)
 

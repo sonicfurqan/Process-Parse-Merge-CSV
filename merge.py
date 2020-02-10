@@ -1,8 +1,11 @@
 # importing dependency
 import pandas as pd
 import numpy as np
+import PySimpleGUI as sg
+
 
 import time
+import sys
 
 
 # importing methods
@@ -114,6 +117,15 @@ def log(csv_data_frame):
     )
 
 
+if len(sys.argv) == 7:
+    Object, PARENT_ORG_UNIQUE_FILED, CHILD_ORG_REF_FIELD, FIELD_NAME_TO_STORE_SOURCE, MERGE_TYPE, OVERRIDE_MASTERDATA = sys.argv[
+        1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6]
+    if OVERRIDE_MASTERDATA == "False":
+        OVERRIDE_MASTERDATA = False
+    else:
+        OVERRIDE_MASTERDATA = True
+
+
 # Main Program
 MASTER_RECORDS_UNIQUES, MASTER_RECORDS, CHILD_RECORDS_UNIQUES, CHILD_RECORDS = read(
     Object
@@ -156,7 +168,6 @@ Duplicate_Not_Found_error = 0
 read_start = time.time()
 
 # helper variables
-master_coloums = MASTER_RECORDS.columns
 child_coluums = CHILD_RECORDS.columns
 
 for master_id in MASTER_RECORDS.index:
