@@ -3,15 +3,16 @@
 2. Process CSV for VLOOKUP
 
 # Modules Required
-1. [Python] (https://www.python.org/downloads/)
-2. [Pandas] (https://pypi.org/project/pandas/)
-3. [Numpy] (https://pypi.org/project/numpy/)
-4. [PySimpleGUI] (https://pypi.org/project/PySimpleGUI/)
+1. [Python](https://www.python.org/downloads/)
+2. [Pandas](https://pypi.org/project/pandas/)
+3. [Numpy](https://pypi.org/project/numpy/)
+4. [PySimpleGUI](https://pypi.org/project/PySimpleGUI/)
 
 # Run Simple GUI 
 ```
 py main.py 
 ```
+![UI](./_UI/UI.PNG)
 
 # MERGING GUIDE
 
