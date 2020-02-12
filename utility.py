@@ -15,8 +15,8 @@ def clean():
     n = gc.collect()
     print("--------------------------")
     print("Unreachable objects:", n)
-    print("Remaining Garbage:",gc.garbage)
-    
+    print("Remaining Garbage:", gc.garbage)
+
 
 # Check Memory Consuption
 
@@ -56,14 +56,14 @@ def printProgressBar(
 
 
 def create_merge_folders():
-    os.makedirs(FOLDER + "MERGE/Master", exist_ok=True)
+    os.makedirs(FOLDER + "MERGE/Parent", exist_ok=True)
     os.makedirs(FOLDER + "MERGE/Child", exist_ok=True)
-    os.makedirs(FOLDER + "MERGE/Merged", exist_ok=True)
+    os.makedirs(FOLDER + "MERGE/Result", exist_ok=True)
     os.makedirs(FOLDER + "MERGE/Log", exist_ok=True)
 
 
 def create_lookup_folders():
-    os.makedirs(FOLDER + "VLOOKUP/Target", exist_ok=True)
-    os.makedirs(FOLDER + "VLOOKUP/Lookup", exist_ok=True)
-    os.makedirs(FOLDER + "VLOOKUP/Processed", exist_ok=True)
+    os.makedirs(FOLDER + "VLOOKUP/Parent", exist_ok=True)
+    os.makedirs(FOLDER + "VLOOKUP/Child", exist_ok=True)
+    os.makedirs(FOLDER + "VLOOKUP/Result", exist_ok=True)
     os.makedirs(FOLDER + "VLOOKUP/Log", exist_ok=True)

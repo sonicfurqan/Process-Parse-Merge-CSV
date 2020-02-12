@@ -34,10 +34,10 @@ python main.py
  Keeps track of record source 
 
 ## Setup
-1. Place master csv in Data/MERGE/Master Folder 
+1. Place master csv in Data/MERGE/Parent Folder 
 2. Place child csv in Data/MERGE/Child Folder
 3. Make Sure master and child csv names are equal
-4. Find Merged file in Data/MERGE/Merged Folder
+4. Find Merged file in Data/MERGE/Result Folder
 5. Find Logs in Data/MERGE/Log folder 
 
 
@@ -120,9 +120,9 @@ python merge.py
 # VLOOKUP GUIDE
 
 ## Setup
-1. Place target CSV in Data/Target Folder 
-2. Place  CSV containing data from where values are to be fetched  in Data/Lookup Folder
-3. Find the Processed file in Data/Processed Folder
+1. Place target CSV in Data/Parent Folder 
+2. Place  CSV containing data from where values are to be fetched  in Data/Child Folder
+3. Find the Processed file in Data/Result Folder
 4. Find Logs in Data/Log folder 
 
 ## Pre-run configuration 

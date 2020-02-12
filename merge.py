@@ -9,7 +9,6 @@ import sys
 import traceback
 
 
-
 # importing methods
 from utility import check_memory, create_merge_folders, printProgressBar, FOLDER, CHUNK
 
@@ -61,22 +60,22 @@ def merge_header(master_csv, child_csv):
 def read(object_name):
     read_start = time.time()
     create_merge_folders()
-    master_csv = FOLDER + "Master/" + object_name + ".csv"
+    master_csv = FOLDER + "Parent/" + object_name + ".csv"
     child_csv = FOLDER + "Child/" + object_name + ".csv"
     check_memory(0)
-    encoding_europ="ISO-8859-1"
-    encoding_default="utf8"
+    encoding_europ = "ISO-8859-1"
+    encoding_default = "utf8"
     try:
         master_data = pd.read_csv(
-            master_csv, skip_blank_lines=True, sep=",", dtype=object,encoding=encoding_default)
+            master_csv, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_default)
         child_data = pd.read_csv(
-            child_csv, skip_blank_lines=True, sep=",", dtype=object,encoding=encoding_default)
+            child_csv, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_default)
     except:
         print("Fallback to europe encoding")
         master_data = pd.read_csv(
-            master_csv, skip_blank_lines=True, sep=",", dtype=object,encoding=encoding_europ)
+            master_csv, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_europ)
         child_data = pd.read_csv(
-            child_csv, skip_blank_lines=True, sep=",", dtype=object,encoding=encoding_europ)
+            child_csv, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_europ)
     if DATACLEANUP:
         master_data.replace(VALUES_TO_BE_REPLACED_BY_NAN, np.nan, inplace=True)
         child_data.replace(VALUES_TO_BE_REPLACED_BY_NAN, np.nan, inplace=True)
@@ -118,7 +117,7 @@ def read(object_name):
 
 def export(csv_data_frame):
     csv_data_frame.to_csv(
-        FOLDER + "Merged/" + Object + ".csv", index=False, mode="a", header=False
+        FOLDER + "Result/" + Object + ".csv", index=False, mode="a", header=False
     )
 
 
@@ -157,7 +156,7 @@ if MERGE_TYPE == "outer":
     MERGED_RECORDS = MERGED_RECORDS.append(
         CHILD_RECORDS_UNIQUES, ignore_index=True)
 
-MERGED_RECORDS.to_csv(FOLDER + "Merged/" + Object +
+MERGED_RECORDS.to_csv(FOLDER + "Result/" + Object +
                       ".csv", index=False, mode="w")
 LOG.to_csv(FOLDER + "Log/" + Object + ".csv", index=False, mode="w")
 
@@ -190,7 +189,6 @@ try:
             if type(child_record_ref) == pd.core.frame.DataFrame:
                 child_record_ref = child_record_ref.iloc[0, :]
 
-           
             # comparing each cell value based on header
             for field_name in child_coluums:
                 if pd.notnull(child_record_ref[field_name]):
@@ -253,9 +251,9 @@ try:
             MERGED_RECORDS = MERGED_RECORDS.iloc[0:0]
             check_memory(CHUNK)
         printProgressBar(
-            CHUNK_INDEX, Progress_sum,prefix="Progress: "+str(CHUNK_INDEX), length=50,
+            CHUNK_INDEX, Progress_sum, prefix="Progress: "+str(CHUNK_INDEX), length=50,
         )
 except Exception as e:
-    print("Error",e)
+    print("Error", e)
     print(traceback.format_exc())
     print(traceback.print_stack())

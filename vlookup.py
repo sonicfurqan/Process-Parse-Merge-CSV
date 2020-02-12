@@ -27,7 +27,7 @@ FOLDER = FOLDER+"VLOOKUP/"
 
 def export(csv_data_frame):
     csv_data_frame.to_csv(
-        FOLDER + "Processed/" + TARGET_FILE_NAME + ".csv", index=False, mode="a", header=False
+        FOLDER + "Result/" + TARGET_FILE_NAME + ".csv", index=False, mode="a", header=False
     )
 
 
@@ -40,22 +40,22 @@ def log(csv_data_frame):
 def read(master_file_name, child_file_name):
     read_start = time.time()
     create_lookup_folders()
-    master_csv = FOLDER + "Target/" + master_file_name + ".csv"
-    child_csv = FOLDER + "Lookup/" + child_file_name + ".csv"
+    master_csv = FOLDER + "Parent/" + master_file_name + ".csv"
+    child_csv = FOLDER + "Child/" + child_file_name + ".csv"
     check_memory(0)
-    encoding_europ="ISO-8859-1"
-    encoding_default="utf8"
+    encoding_europ = "ISO-8859-1"
+    encoding_default = "utf8"
     try:
         master_data = pd.read_csv(
-            master_csv, skip_blank_lines=True, sep=",", dtype=object,)
+            master_csv, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_default)
         child_data = pd.read_csv(
-            child_csv, skip_blank_lines=True, sep=",", dtype=object,)
+            child_csv, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_default)
     except:
         print("Fallback to europe encoding")
         master_data = pd.read_csv(
-            master_csv, skip_blank_lines=True, sep=",", dtype=object,encoding=encoding_europ)
+            master_csv, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_europ)
         child_data = pd.read_csv(
-            child_csv, skip_blank_lines=True, sep=",", dtype=object,encoding=encoding_europ)
+            child_csv, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_europ)
     # Data clean Up
     master_data.replace(VALUES_TO_BE_REPLACED_BY_NULL, np.nan, inplace=True)
     child_data.replace(VALUES_TO_BE_REPLACED_BY_NULL, np.nan, inplace=True)
@@ -106,7 +106,7 @@ print("--------------------------")
 PROCESSED_RECORDS = pd.DataFrame(columns=MASTER_RECORDS.columns)
 PROCESSED_RECORDS = PROCESSED_RECORDS.append(
     MASTER_NULL_RECORDS, ignore_index=True)
-PROCESSED_RECORDS.to_csv(FOLDER + "Processed/" + TARGET_FILE_NAME +
+PROCESSED_RECORDS.to_csv(FOLDER + "Result/" + TARGET_FILE_NAME +
                          ".csv", index=False, mode="w")
 PROCESSED_RECORDS = PROCESSED_RECORDS.iloc[0:0]
 
@@ -178,9 +178,9 @@ try:
             PROCESSED_RECORDS = PROCESSED_RECORDS.iloc[0:0]
             check_memory(CHUNK)
         printProgressBar(
-            CHUNK_INDEX, Progress_sum,prefix="Progress: "+str(CHUNK_INDEX), length=50,
+            CHUNK_INDEX, Progress_sum, prefix="Progress: "+str(CHUNK_INDEX), length=50,
         )
 except Exception as e:
-    print("Error",e)
+    print("Error", e)
     print(traceback.format_exc())
     print(traceback.print_stack())
