@@ -5,6 +5,7 @@ import numpy as np
 
 import time
 import sys
+import traceback
 
 
 from parameters import (
@@ -42,10 +43,19 @@ def read(master_file_name, child_file_name):
     master_csv = FOLDER + "Target/" + master_file_name + ".csv"
     child_csv = FOLDER + "Lookup/" + child_file_name + ".csv"
     check_memory(0)
-    master_data = pd.read_csv(
-        master_csv, skip_blank_lines=True, sep=",", dtype=object,)
-    child_data = pd.read_csv(
-        child_csv, skip_blank_lines=True, sep=",", dtype=object,)
+    encoding_europ="ISO-8859-1"
+    encoding_default="utf8"
+    try:
+        master_data = pd.read_csv(
+            master_csv, skip_blank_lines=True, sep=",", dtype=object,)
+        child_data = pd.read_csv(
+            child_csv, skip_blank_lines=True, sep=",", dtype=object,)
+    except:
+        print("Fallback to europe encoding")
+        master_data = pd.read_csv(
+            master_csv, skip_blank_lines=True, sep=",", dtype=object,encoding=encoding_europ)
+        child_data = pd.read_csv(
+            child_csv, skip_blank_lines=True, sep=",", dtype=object,encoding=encoding_europ)
     # Data clean Up
     master_data.replace(VALUES_TO_BE_REPLACED_BY_NULL, np.nan, inplace=True)
     child_data.replace(VALUES_TO_BE_REPLACED_BY_NULL, np.nan, inplace=True)
@@ -119,55 +129,58 @@ read_start = time.time()
 # helper variables
 master_coloums = MASTER_RECORDS.columns
 child_coluums = LOOKUP_RECORDS.columns
-
-for master_id in MASTER_RECORDS.index:
-    CHUNK_INDEX = CHUNK_INDEX + 1
-    master_record_ref = MASTER_RECORDS.loc[master_id]
-    try:
-        child_record_ref = LOOKUP_RECORDS.loc[master_id]
-        if type(child_record_ref) == pd.core.frame.DataFrame:
-            child_record_ref = child_record_ref.iloc[0, :]
-        master_record_ref[TARGET_FILE_KEY_COLUMN_NAME] = child_record_ref[LOOKUP_FILE_VALUE_COLUMN_NAME]
-    except KeyError:
-        Lookup_not_found = Lookup_not_found + 1
-        LOG = LOG.append(
-            {
-                "REF KEY": master_id,
-                "ORIGIN": "Master",
-                "Comment": "Refrence Record not found in child csv",
-            },
-            ignore_index=True,
+try:
+    for master_id in MASTER_RECORDS.index:
+        CHUNK_INDEX = CHUNK_INDEX + 1
+        master_record_ref = MASTER_RECORDS.loc[master_id]
+        try:
+            child_record_ref = LOOKUP_RECORDS.loc[master_id]
+            if type(child_record_ref) == pd.core.frame.DataFrame:
+                child_record_ref = child_record_ref.iloc[0, :]
+            master_record_ref[TARGET_FILE_KEY_COLUMN_NAME] = child_record_ref[LOOKUP_FILE_VALUE_COLUMN_NAME]
+        except KeyError:
+            Lookup_not_found = Lookup_not_found + 1
+            LOG = LOG.append(
+                {
+                    "REF KEY": master_id,
+                    "ORIGIN": "Master",
+                    "Comment": "Refrence Record not found in child csv",
+                },
+                ignore_index=True,
+            )
+            log(LOG)
+            LOG = LOG.iloc[0:0]
+        PROCESSED_RECORDS = PROCESSED_RECORDS.append(
+            master_record_ref, ignore_index=True)
+        # writing data to csv in chunks of 200 records to reduce memory
+        if CHUNK_INDEX == len(MASTER_RECORDS.index):
+            print("\n")
+            read_end = time.time()
+            print("CHUNK COUNT => %s " % CHUNK_INDEX)
+            print("Current Chunk took %.2f seconds to process" %
+                  (read_end-read_start))
+            print("Refrence not Found Count %s" % Lookup_not_found)
+            Lookup_not_found = 0
+            export(PROCESSED_RECORDS)
+            PROCESSED_RECORDS = PROCESSED_RECORDS.iloc[0:0]
+            check_memory(CHUNK_INDEX)
+        elif CHUNK_INDEX == CHUNK:
+            print("\n")
+            read_end = time.time()
+            print("CHUNK COUNT => %s " % CHUNK)
+            print("Current Chunk took %.2f seconds to process" %
+                  (read_end-read_start))
+            read_start = time.time()
+            print("Refrence not Found Count %s" % Lookup_not_found)
+            Lookup_not_found = 0
+            export(PROCESSED_RECORDS)
+            CHUNK = CHUNK + CHUNK
+            PROCESSED_RECORDS = PROCESSED_RECORDS.iloc[0:0]
+            check_memory(CHUNK)
+        printProgressBar(
+            CHUNK_INDEX, Progress_sum,prefix="Progress: "+str(CHUNK_INDEX), length=50,
         )
-        log(LOG)
-        LOG = LOG.iloc[0:0]
-
-    PROCESSED_RECORDS = PROCESSED_RECORDS.append(
-        master_record_ref, ignore_index=True)
-    # writing data to csv in chunks of 200 records to reduce memory
-    if CHUNK_INDEX == len(MASTER_RECORDS.index):
-        print("\n")
-        read_end = time.time()
-        print("CHUNK COUNT => %s " % CHUNK_INDEX)
-        print("Current Chunk took %.2f seconds to process" %
-              (read_end-read_start))
-        print("Refrence not Found Count %s" % Lookup_not_found)
-        Lookup_not_found = 0
-        export(PROCESSED_RECORDS)
-        PROCESSED_RECORDS = PROCESSED_RECORDS.iloc[0:0]
-        check_memory(CHUNK_INDEX)
-    elif CHUNK_INDEX == CHUNK:
-        print("\n")
-        read_end = time.time()
-        print("CHUNK COUNT => %s " % CHUNK)
-        print("Current Chunk took %.2f seconds to process" %
-              (read_end-read_start))
-        read_start = time.time()
-        print("Refrence not Found Count %s" % Lookup_not_found)
-        Lookup_not_found = 0
-        export(PROCESSED_RECORDS)
-        CHUNK = CHUNK + CHUNK
-        PROCESSED_RECORDS = PROCESSED_RECORDS.iloc[0:0]
-        check_memory(CHUNK)
-    printProgressBar(
-        CHUNK_INDEX, Progress_sum, length=50,
-    )
+except Exception as e:
+    print("Error",e)
+    print(traceback.format_exc())
+    print(traceback.print_stack())

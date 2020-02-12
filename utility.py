@@ -15,9 +15,8 @@ def clean():
     n = gc.collect()
     print("--------------------------")
     print("Unreachable objects:", n)
-    print("Remaining Garbage:")
-    print(gc.garbage)
-    print("--------------------------")
+    print("Remaining Garbage:",gc.garbage)
+    
 
 # Check Memory Consuption
 
@@ -31,6 +30,7 @@ def check_memory(number):
         end="\n",
         sep=" | ",
     )
+    print("--------------------------")
 
 
 # Print iterations progress
