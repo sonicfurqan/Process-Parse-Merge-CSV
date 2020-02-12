@@ -63,9 +63,9 @@ def read(object_name):
     child_csv = FOLDER + "Child/" + object_name + ".csv"
     check_memory(0)
     master_data = pd.read_csv(
-        master_csv, skip_blank_lines=True, sep=",", dtype=object,)
+        master_csv, skip_blank_lines=True, sep=",", dtype=object,encoding="utf8")
     child_data = pd.read_csv(
-        child_csv, skip_blank_lines=True, sep=",", dtype=object,)
+        child_csv, skip_blank_lines=True, sep=",", dtype=object,encoding="utf8")
     if DATACLEANUP:
         master_data.replace(VALUES_TO_BE_REPLACED_BY_NAN, np.nan, inplace=True)
         child_data.replace(VALUES_TO_BE_REPLACED_BY_NAN, np.nan, inplace=True)

@@ -7,6 +7,7 @@
 2. [Pandas](https://pypi.org/project/pandas/)
 3. [Numpy](https://pypi.org/project/numpy/)
 4. [PySimpleGUI](https://pypi.org/project/PySimpleGUI/)
+5. [PsUtill](https://pypi.org/project/psutil/)
 
 # Run Simple GUI 
 ```
