@@ -17,21 +17,21 @@ from parameters import (
 )
 
 # importing methods
-from utility import check_memory, read_file, VLOOKUPFOLDER, printProgressBar, FOLDER, CHUNK
+from utility import check_memory, read_file, save, VLOOKUPFOLDER, printProgressBar, FOLDER, CHUNK
 
 
 # defineing methods
 
 
 def export(csv_data_frame):
-    csv_data_frame.to_csv(
-        FOLDER + VLOOKUPFOLDER + "Result/" + TARGET_FILE_NAME + ".csv", index=False, mode="a", header=False
+    save(
+        FOLDER + VLOOKUPFOLDER + "Result/" + TARGET_FILE_NAME + ".csv", csv_data_frame
     )
 
 
 def log(csv_data_frame):
-    csv_data_frame.to_csv(
-        FOLDER+VLOOKUPFOLDER + "Log/" + TARGET_FILE_NAME + ".csv", index=False, mode="a", header=False
+    save(
+        FOLDER+VLOOKUPFOLDER + "Log/" + TARGET_FILE_NAME + ".csv", csv_data_frame
     )
 
 

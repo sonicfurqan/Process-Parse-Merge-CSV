@@ -76,6 +76,12 @@ def read(file_name):
             file_name, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_europ)
 
 
+def save(file_name, data):
+    data.to_csv(
+        file_name, index=False, mode="a", header=False
+    )
+
+
 def read_file(FOLDER, SUBFOLDER, file_name):
     __create_folder(FOLDER, SUBFOLDER)
     master_csv = FOLDER + SUBFOLDER + "Parent/" + file_name + ".csv"

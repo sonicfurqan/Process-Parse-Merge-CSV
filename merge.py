@@ -10,7 +10,7 @@ import traceback
 
 
 # importing methods
-from utility import check_memory, read_file, printProgressBar, FOLDER, MERGEFOLDER, CHUNK
+from utility import check_memory, read_file, printProgressBar, FOLDER, MERGEFOLDER, CHUNK, save
 
 # importing fileds
 from parameters import (
@@ -101,15 +101,13 @@ def read(object_name):
 
 
 def export(csv_data_frame):
-    csv_data_frame.to_csv(
-        FOLDER + MERGEFOLDER + "Result/" + Object + ".csv", index=False, mode="a", header=False
+    save(
+        FOLDER + MERGEFOLDER + "Result/" + Object + ".csv", csv_data_frame
     )
 
 
 def log(csv_data_frame):
-    csv_data_frame.to_csv(
-        FOLDER + MERGEFOLDER + "Log/" + Object + ".csv", index=False, mode="a", header=False
-    )
+    save(FOLDER + MERGEFOLDER + "Log/" + Object + ".csv", csv_data_frame)
 
 
 if len(sys.argv) == 7:
