@@ -6,6 +6,8 @@ import PySimpleGUI as sg
 
 import time
 import sys
+import traceback
+
 
 
 # importing methods
@@ -70,6 +72,7 @@ def read(object_name):
         child_data = pd.read_csv(
             child_csv, skip_blank_lines=True, sep=",", dtype=object,encoding=encoding_default)
     except:
+        print("Fallback to europe encoding")
         master_data = pd.read_csv(
             master_csv, skip_blank_lines=True, sep=",", dtype=object,encoding=encoding_europ)
         child_data = pd.read_csv(
@@ -177,79 +180,82 @@ read_start = time.time()
 
 # helper variables
 child_coluums = CHILD_RECORDS.columns
+try:
+    for master_id in MASTER_RECORDS.index:
+        CHUNK_INDEX = CHUNK_INDEX + 1
+        master_record_ref = MASTER_RECORDS.loc[master_id]
+        isMatch = True
+        try:
+            child_record_ref = CHILD_RECORDS.loc[master_id]
+            if type(child_record_ref) == pd.core.frame.DataFrame:
+                child_record_ref = child_record_ref.iloc[0, :]
 
-for master_id in MASTER_RECORDS.index:
-    CHUNK_INDEX = CHUNK_INDEX + 1
-    master_record_ref = MASTER_RECORDS.loc[master_id]
-    isMatch = True
-    try:
-        child_record_ref = CHILD_RECORDS.loc[master_id]
-        if type(child_record_ref) == pd.core.frame.DataFrame:
-            child_record_ref = child_record_ref.iloc[0, :]
-
-        CHILD_RECORDS.drop(
-            child_record_ref[CHILD_ORG_REF_FIELD], axis=0, inplace=True)
-        # comparing each cell value based on header
-        for field_name in child_coluums:
-            if pd.notnull(child_record_ref[field_name]):
-                if OVERRIDE_MASTERDATA:
-                    master_record_ref[field_name] = child_record_ref[field_name]
-                elif pd.isnull(master_record_ref[field_name]):
-                    master_record_ref[field_name] = child_record_ref[field_name]
-    except KeyError:
-        isMatch = False
-        Duplicate_Not_Found_error = Duplicate_Not_Found_error + 1
-        LOG = LOG.append(
-            {
-                "REF KEY": master_id,
-                "ORIGIN": "Master",
-                "Comment": "Refrence Record not found in child org",
-            },
-            ignore_index=True,
-        )
-        log(LOG)
-        LOG = LOG.iloc[0:0]
-    if MERGE_TYPE == "outer":
-        master_record_ref[FIELD_NAME_TO_STORE_SOURCE] = (
-            isMatch and "Master/Child" or "Master"
-        )
-        MERGED_RECORDS = MERGED_RECORDS.append(
-            master_record_ref, ignore_index=True)
-    elif isMatch:
-        master_record_ref[FIELD_NAME_TO_STORE_SOURCE] = "Master/Child"
-        MERGED_RECORDS = MERGED_RECORDS.append(
-            master_record_ref, ignore_index=True)
-    # writing data to csv in chunks of 200 records to reduce memory
-    if CHUNK_INDEX == len(MASTER_RECORDS.index):
-        print("\n")
-        read_end = time.time()
-        print("CHUNK COUNT => %s " % CHUNK_INDEX)
-        print("Current Chunk took %.2f seconds to process" %
-              (read_end-read_start))
-        print("Refrence not Found Count %s" % Duplicate_Not_Found_error)
-        print("Remaing Child records %s" % len(CHILD_RECORDS))
-        Duplicate_Not_Found_error = 0
+           
+            # comparing each cell value based on header
+            for field_name in child_coluums:
+                if pd.notnull(child_record_ref[field_name]):
+                    if OVERRIDE_MASTERDATA:
+                        master_record_ref[field_name] = child_record_ref[field_name]
+                    elif pd.isnull(master_record_ref[field_name]):
+                        master_record_ref[field_name] = child_record_ref[field_name]
+        except KeyError:
+            isMatch = False
+            Duplicate_Not_Found_error = Duplicate_Not_Found_error + 1
+            LOG = LOG.append(
+                {
+                    "REF KEY": master_id,
+                    "ORIGIN": "Master",
+                    "Comment": "Refrence Record not found in child org",
+                },
+                ignore_index=True,
+            )
+            log(LOG)
+            LOG = LOG.iloc[0:0]
         if MERGE_TYPE == "outer":
-            temp = {FIELD_NAME_TO_STORE_SOURCE: "Child"}
-            CHILD_RECORDS = CHILD_RECORDS.assign(**temp)
+            master_record_ref[FIELD_NAME_TO_STORE_SOURCE] = (
+                isMatch and "Master/Child" or "Master"
+            )
             MERGED_RECORDS = MERGED_RECORDS.append(
-                CHILD_RECORDS, ignore_index=True)
-        export(MERGED_RECORDS)
-        MERGED_RECORDS = MERGED_RECORDS.iloc[0:0]
-        check_memory(CHUNK_INDEX)
-    elif CHUNK_INDEX == CHUNK:
-        print("\n")
-        read_end = time.time()
-        print("CHUNK COUNT => %s " % CHUNK)
-        print("Current Chunk took %.2f seconds to process" %
-              (read_end-read_start))
-        read_start = time.time()
-        print("Refrence not Found Count %s" % Duplicate_Not_Found_error)
-        Duplicate_Not_Found_error = 0
-        export(MERGED_RECORDS)
-        CHUNK = CHUNK + CHUNK
-        MERGED_RECORDS = MERGED_RECORDS.iloc[0:0]
-        check_memory(CHUNK)
-    printProgressBar(
-        CHUNK_INDEX, Progress_sum, length=50,
-    )
+                master_record_ref, ignore_index=True)
+        elif isMatch:
+            master_record_ref[FIELD_NAME_TO_STORE_SOURCE] = "Master/Child"
+            MERGED_RECORDS = MERGED_RECORDS.append(
+                master_record_ref, ignore_index=True)
+        # writing data to csv in chunks of 200 records to reduce memory
+        if CHUNK_INDEX == len(MASTER_RECORDS.index):
+            print("\n")
+            read_end = time.time()
+            print("CHUNK COUNT => %s " % CHUNK_INDEX)
+            print("Current Chunk took %.2f seconds to process" %
+                  (read_end-read_start))
+            print("Refrence not Found Count %s" % Duplicate_Not_Found_error)
+            print("Remaing Child records %s" % len(CHILD_RECORDS))
+            Duplicate_Not_Found_error = 0
+            if MERGE_TYPE == "outer":
+                temp = {FIELD_NAME_TO_STORE_SOURCE: "Child"}
+                CHILD_RECORDS = CHILD_RECORDS.assign(**temp)
+                MERGED_RECORDS = MERGED_RECORDS.append(
+                    CHILD_RECORDS, ignore_index=True)
+            export(MERGED_RECORDS)
+            MERGED_RECORDS = MERGED_RECORDS.iloc[0:0]
+            check_memory(CHUNK_INDEX)
+        elif CHUNK_INDEX == CHUNK:
+            print("\n")
+            read_end = time.time()
+            print("CHUNK COUNT => %s " % CHUNK)
+            print("Current Chunk took %.2f seconds to process" %
+                  (read_end-read_start))
+            read_start = time.time()
+            print("Refrence not Found Count %s" % Duplicate_Not_Found_error)
+            Duplicate_Not_Found_error = 0
+            export(MERGED_RECORDS)
+            CHUNK = CHUNK + CHUNK
+            MERGED_RECORDS = MERGED_RECORDS.iloc[0:0]
+            check_memory(CHUNK)
+        printProgressBar(
+            CHUNK_INDEX, Progress_sum,prefix="Progress: "+str(CHUNK_INDEX), length=50,
+        )
+except Exception as e:
+    print("Error",e)
+    print(traceback.format_exc())
+    print(traceback.print_stack())
