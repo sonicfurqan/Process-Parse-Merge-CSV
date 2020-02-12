@@ -9,9 +9,14 @@
 4. [PySimpleGUI](https://pypi.org/project/PySimpleGUI/)
 5. [PsUtill](https://pypi.org/project/psutil/)
 
+# Run Setup to install required dependency
+```
+python setup.py
+```
+
 # Run Simple GUI 
 ```
-py main.py 
+python main.py 
 ```
 ![UI](./_UI/UI.PNG)
 
@@ -57,7 +62,7 @@ record
 # Run Merge Script
 For running a script to merge 2 CSV
 ```
-py merge.py
+python merge.py
 ```
 
 
@@ -132,7 +137,7 @@ py merge.py
 # Run Vlookup Script
 For running a script to merge 2 CSV
 ```
-py vlookup.py
+python vlookup.py
 ```
 
 ## Example 
