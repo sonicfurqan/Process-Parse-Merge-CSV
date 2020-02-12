@@ -14,7 +14,6 @@ from parameters import (
 from parameters import (
     TARGET_FILE_NAME,
     TARGET_FILE_KEY_COLUMN_NAME,
-    LOOKUP_FILE_NAME,
     LOOKUP_FILE_KEY_COLUMN_NAME,
     LOOKUP_FILE_VALUE_COLUMN_NAME,
 )
@@ -40,7 +39,6 @@ layout = [
     [sg.Text('Target File Name', size=(15, 1)), sg.InputText('Example_new')],
     [sg.Text('Target File Key Column', size=(15, 1)),
      sg.InputText('Id')],
-    [sg.Text('Loohup File Name', size=(15, 1)), sg.InputText('Example_old')],
     [sg.Text('Child File Key Column', size=(15, 1)),
      sg.InputText('Old_Id')],
     [sg.Text('Child File Value Column Name', size=(15, 1)),
@@ -65,7 +63,7 @@ if button == "OK":
                                                                   MERGE and "outer" or "inner"
                                                               ), OVERRIDE))
 elif button == "Submit":
-    TARGET_FILE_NAME, TARGET_FILE_KEY_COLUMN_NAME, LOOKUP_FILE_NAME, LOOKUP_FILE_KEY_COLUMN_NAME, LOOKUP_FILE_VALUE_COLUMN_NAME = values[
-        6], values[7], values[8], values[9], values[10]
-    data = subprocess.call("%s vlookup.py %s %s %s %s %s " % (py_command, TARGET_FILE_NAME, TARGET_FILE_KEY_COLUMN_NAME,
-                                                              LOOKUP_FILE_NAME, LOOKUP_FILE_KEY_COLUMN_NAME, LOOKUP_FILE_VALUE_COLUMN_NAME))
+    TARGET_FILE_NAME, TARGET_FILE_KEY_COLUMN_NAME, LOOKUP_FILE_KEY_COLUMN_NAME, LOOKUP_FILE_VALUE_COLUMN_NAME = values[
+        6], values[7], values[8], values[9]
+    data = subprocess.call("%s vlookup.py %s %s %s %s " % (py_command, TARGET_FILE_NAME, TARGET_FILE_KEY_COLUMN_NAME,
+                                                           LOOKUP_FILE_KEY_COLUMN_NAME, LOOKUP_FILE_VALUE_COLUMN_NAME))

@@ -129,10 +129,9 @@ python merge.py
 ### variable values in parameters.py file
 1. TARGET_FILE_NAME: Filename in which values are to be replaced
 2. TARGET_FILE_KEY_COLUMN_NAME: Column name in target file in which values are to be searched and replaced
-3. LOOKUP_FILE_NAME = Filename from which values are to be fetched 
-4. LOOKUP_FILE_KEY_COLUMN_NAME: column name in which value is to be searched 
-5. LOOKUP_FILE_VALUE_COLUMN_NAME: column name from which value is fetched to be replaced in the target file
-6. VALUES_TO_BE_REPLACED_BY_NULL: array list which contains the values that will be replaced by null
+3. LOOKUP_FILE_KEY_COLUMN_NAME: column name in which value is to be searched 
+4. LOOKUP_FILE_VALUE_COLUMN_NAME: column name from which value is fetched to be replaced in the target file
+5. VALUES_TO_BE_REPLACED_BY_NULL: array list which contains the values that will be replaced by null
 
 # Run Vlookup Script
 For running a script to merge 2 CSV

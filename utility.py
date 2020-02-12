@@ -2,16 +2,19 @@
 import psutil
 import gc
 import os
+import time
+import pandas as pd
+
 
 # Deifineing Variabled
 FOLDER = "Data/"
 CHUNK = 200
-
-
+MERGEFOLDER = "MERGE/"
+VLOOKUPFOLDER = "VLOOKUP/"
 # Clear Merory
 
 
-def clean():
+def __clean():
     n = gc.collect()
     print("--------------------------")
     print("Unreachable objects:", n)
@@ -22,7 +25,7 @@ def clean():
 
 
 def check_memory(number):
-    clean()
+    __clean()
     print(
         "SEQUENCE => %d" % number,
         "MEMORY USED => %f Percent" % psutil.virtual_memory().percent,
@@ -55,15 +58,28 @@ def printProgressBar(
         print()
 
 
-def create_merge_folders():
-    os.makedirs(FOLDER + "MERGE/Parent", exist_ok=True)
-    os.makedirs(FOLDER + "MERGE/Child", exist_ok=True)
-    os.makedirs(FOLDER + "MERGE/Result", exist_ok=True)
-    os.makedirs(FOLDER + "MERGE/Log", exist_ok=True)
+def __create_folder(FOLDER, SUBFOLDER):
+    os.makedirs(FOLDER + SUBFOLDER + "/Parent", exist_ok=True)
+    os.makedirs(FOLDER + SUBFOLDER + "/Child", exist_ok=True)
+    os.makedirs(FOLDER + SUBFOLDER + "/Result", exist_ok=True)
+    os.makedirs(FOLDER + SUBFOLDER + "/Log", exist_ok=True)
 
 
-def create_lookup_folders():
-    os.makedirs(FOLDER + "VLOOKUP/Parent", exist_ok=True)
-    os.makedirs(FOLDER + "VLOOKUP/Child", exist_ok=True)
-    os.makedirs(FOLDER + "VLOOKUP/Result", exist_ok=True)
-    os.makedirs(FOLDER + "VLOOKUP/Log", exist_ok=True)
+def read(file_name):
+    encoding_europ = "ISO-8859-1"
+    encoding_default = "utf8"
+    try:
+        return pd.read_csv(
+            file_name, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_default)
+    except:
+        return pd.read_csv(
+            file_name, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_europ)
+
+
+def read_file(FOLDER, SUBFOLDER, file_name):
+    __create_folder(FOLDER, SUBFOLDER)
+    master_csv = FOLDER + SUBFOLDER + "Parent/" + file_name + ".csv"
+    child_csv = FOLDER + SUBFOLDER + "Child/" + file_name + ".csv"
+    master_data = read(master_csv)
+    child_data = read(child_csv)
+    return master_data, child_data

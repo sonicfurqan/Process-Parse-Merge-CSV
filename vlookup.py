@@ -12,50 +12,36 @@ from parameters import (
     VALUES_TO_BE_REPLACED_BY_NULL,
     TARGET_FILE_NAME,
     TARGET_FILE_KEY_COLUMN_NAME,
-    LOOKUP_FILE_NAME,
     LOOKUP_FILE_KEY_COLUMN_NAME,
     LOOKUP_FILE_VALUE_COLUMN_NAME,
 )
 
 # importing methods
-from utility import check_memory, create_lookup_folders, printProgressBar, FOLDER, CHUNK
+from utility import check_memory, read_file, VLOOKUPFOLDER, printProgressBar, FOLDER, CHUNK
 
-FOLDER = FOLDER+"VLOOKUP/"
 
 # defineing methods
 
 
 def export(csv_data_frame):
     csv_data_frame.to_csv(
-        FOLDER + "Result/" + TARGET_FILE_NAME + ".csv", index=False, mode="a", header=False
+        FOLDER + VLOOKUPFOLDER + "Result/" + TARGET_FILE_NAME + ".csv", index=False, mode="a", header=False
     )
 
 
 def log(csv_data_frame):
     csv_data_frame.to_csv(
-        FOLDER + "Log/" + TARGET_FILE_NAME + ".csv", index=False, mode="a", header=False
+        FOLDER+VLOOKUPFOLDER + "Log/" + TARGET_FILE_NAME + ".csv", index=False, mode="a", header=False
     )
 
 
-def read(master_file_name, child_file_name):
+def read(master_file_name):
     read_start = time.time()
-    create_lookup_folders()
-    master_csv = FOLDER + "Parent/" + master_file_name + ".csv"
-    child_csv = FOLDER + "Child/" + child_file_name + ".csv"
+
+    master_data, child_data = read_file(
+        FOLDER, VLOOKUPFOLDER, master_file_name)
     check_memory(0)
-    encoding_europ = "ISO-8859-1"
-    encoding_default = "utf8"
-    try:
-        master_data = pd.read_csv(
-            master_csv, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_default)
-        child_data = pd.read_csv(
-            child_csv, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_default)
-    except:
-        print("Fallback to europe encoding")
-        master_data = pd.read_csv(
-            master_csv, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_europ)
-        child_data = pd.read_csv(
-            child_csv, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_europ)
+
     # Data clean Up
     master_data.replace(VALUES_TO_BE_REPLACED_BY_NULL, np.nan, inplace=True)
     child_data.replace(VALUES_TO_BE_REPLACED_BY_NULL, np.nan, inplace=True)
@@ -88,14 +74,13 @@ def read(master_file_name, child_file_name):
         child_data.set_index(LOOKUP_FILE_KEY_COLUMN_NAME, drop=False))
 
 
-if len(sys.argv) == 6:
-    TARGET_FILE_NAME, TARGET_FILE_KEY_COLUMN_NAME, LOOKUP_FILE_NAME, LOOKUP_FILE_KEY_COLUMN_NAME, LOOKUP_FILE_VALUE_COLUMN_NAME = sys.argv[
-        1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]
-
+if len(sys.argv) == 5:
+    TARGET_FILE_NAME, TARGET_FILE_KEY_COLUMN_NAME, LOOKUP_FILE_KEY_COLUMN_NAME, LOOKUP_FILE_VALUE_COLUMN_NAME = sys.argv[
+        1], sys.argv[2], sys.argv[3], sys.argv[4]
 
 # main program
 MASTER_NULL_RECORDS, MASTER_RECORDS, LOOKUP_RECORDS = read(
-    TARGET_FILE_NAME, LOOKUP_FILE_NAME)
+    TARGET_FILE_NAME)
 
 print("---------Dataframe Details-----------------")
 print("Target empty keys count=>", len(MASTER_NULL_RECORDS))
@@ -106,12 +91,13 @@ print("--------------------------")
 PROCESSED_RECORDS = pd.DataFrame(columns=MASTER_RECORDS.columns)
 PROCESSED_RECORDS = PROCESSED_RECORDS.append(
     MASTER_NULL_RECORDS, ignore_index=True)
-PROCESSED_RECORDS.to_csv(FOLDER + "Result/" + TARGET_FILE_NAME +
+PROCESSED_RECORDS.to_csv(FOLDER + VLOOKUPFOLDER + "Result/" + TARGET_FILE_NAME +
                          ".csv", index=False, mode="w")
 PROCESSED_RECORDS = PROCESSED_RECORDS.iloc[0:0]
 
 LOG = pd.DataFrame(columns=["REF KEY", "ORIGIN", "Comment"])
-LOG.to_csv(FOLDER + "Log/" + TARGET_FILE_NAME + ".csv", index=False, mode="w")
+LOG.to_csv(FOLDER + VLOOKUPFOLDER + "Log/" +
+           TARGET_FILE_NAME + ".csv", index=False, mode="w")
 
 print("Master CSV Memory =>", MASTER_RECORDS.memory_usage(index=True).sum())
 print("Child CSV Memory =>", LOOKUP_RECORDS.memory_usage(index=True).sum())

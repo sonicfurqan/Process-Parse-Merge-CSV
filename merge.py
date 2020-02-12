@@ -10,7 +10,7 @@ import traceback
 
 
 # importing methods
-from utility import check_memory, create_merge_folders, printProgressBar, FOLDER, CHUNK
+from utility import check_memory, read_file, printProgressBar, FOLDER, MERGEFOLDER, CHUNK
 
 # importing fileds
 from parameters import (
@@ -36,7 +36,7 @@ MERGEHEADERS = True
 DROPEMPTYHEADERS = True
 DATACLEANUP = True
 DROPEMPTYROWS = True
-FOLDER = FOLDER+"MERGE/"
+
 
 # defineing functions
 
@@ -59,23 +59,8 @@ def merge_header(master_csv, child_csv):
 
 def read(object_name):
     read_start = time.time()
-    create_merge_folders()
-    master_csv = FOLDER + "Parent/" + object_name + ".csv"
-    child_csv = FOLDER + "Child/" + object_name + ".csv"
+    master_data, child_data = read_file(FOLDER, MERGEFOLDER, object_name)
     check_memory(0)
-    encoding_europ = "ISO-8859-1"
-    encoding_default = "utf8"
-    try:
-        master_data = pd.read_csv(
-            master_csv, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_default)
-        child_data = pd.read_csv(
-            child_csv, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_default)
-    except:
-        print("Fallback to europe encoding")
-        master_data = pd.read_csv(
-            master_csv, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_europ)
-        child_data = pd.read_csv(
-            child_csv, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_europ)
     if DATACLEANUP:
         master_data.replace(VALUES_TO_BE_REPLACED_BY_NAN, np.nan, inplace=True)
         child_data.replace(VALUES_TO_BE_REPLACED_BY_NAN, np.nan, inplace=True)
@@ -117,13 +102,13 @@ def read(object_name):
 
 def export(csv_data_frame):
     csv_data_frame.to_csv(
-        FOLDER + "Result/" + Object + ".csv", index=False, mode="a", header=False
+        FOLDER + MERGEFOLDER + "Result/" + Object + ".csv", index=False, mode="a", header=False
     )
 
 
 def log(csv_data_frame):
     csv_data_frame.to_csv(
-        FOLDER + "Log/" + Object + ".csv", index=False, mode="a", header=False
+        FOLDER + MERGEFOLDER + "Log/" + Object + ".csv", index=False, mode="a", header=False
     )
 
 
@@ -156,9 +141,10 @@ if MERGE_TYPE == "outer":
     MERGED_RECORDS = MERGED_RECORDS.append(
         CHILD_RECORDS_UNIQUES, ignore_index=True)
 
-MERGED_RECORDS.to_csv(FOLDER + "Result/" + Object +
+MERGED_RECORDS.to_csv(FOLDER + MERGEFOLDER + "Result/" + Object +
                       ".csv", index=False, mode="w")
-LOG.to_csv(FOLDER + "Log/" + Object + ".csv", index=False, mode="w")
+LOG.to_csv(FOLDER + MERGEFOLDER + "Log/" +
+           Object + ".csv", index=False, mode="w")
 
 # reset dataframe as we dont need saved records in memory
 MERGED_RECORDS = MERGED_RECORDS.iloc[0:0]
