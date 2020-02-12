@@ -62,10 +62,18 @@ def read(object_name):
     master_csv = FOLDER + "Master/" + object_name + ".csv"
     child_csv = FOLDER + "Child/" + object_name + ".csv"
     check_memory(0)
-    master_data = pd.read_csv(
-        master_csv, skip_blank_lines=True, sep=",", dtype=object,encoding="utf8")
-    child_data = pd.read_csv(
-        child_csv, skip_blank_lines=True, sep=",", dtype=object,encoding="utf8")
+    encoding_europ="ISO-8859-1"
+    encoding_default="utf8"
+    try:
+        master_data = pd.read_csv(
+            master_csv, skip_blank_lines=True, sep=",", dtype=object,encoding=encoding_default)
+        child_data = pd.read_csv(
+            child_csv, skip_blank_lines=True, sep=",", dtype=object,encoding=encoding_default)
+    except:
+        master_data = pd.read_csv(
+            master_csv, skip_blank_lines=True, sep=",", dtype=object,encoding=encoding_europ)
+        child_data = pd.read_csv(
+            child_csv, skip_blank_lines=True, sep=",", dtype=object,encoding=encoding_europ)
     if DATACLEANUP:
         master_data.replace(VALUES_TO_BE_REPLACED_BY_NAN, np.nan, inplace=True)
         child_data.replace(VALUES_TO_BE_REPLACED_BY_NAN, np.nan, inplace=True)
