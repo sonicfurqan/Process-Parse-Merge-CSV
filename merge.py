@@ -10,7 +10,7 @@ import traceback
 
 
 # importing methods
-from utility import check_memory, read_file, printProgressBar, FOLDER, MERGEFOLDER, CHUNK, save
+from Support.utility import check_memory, read_file, printProgressBar, FOLDER, MERGEFOLDER, CHUNK, save
 
 # importing fileds
 from parameters import (

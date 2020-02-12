@@ -17,7 +17,7 @@ from parameters import (
 )
 
 # importing methods
-from utility import check_memory, read_file, save, VLOOKUPFOLDER, printProgressBar, FOLDER, CHUNK
+from Support.utility import check_memory, read_file, save, VLOOKUPFOLDER, printProgressBar, FOLDER, CHUNK
 
 
 # defineing methods
