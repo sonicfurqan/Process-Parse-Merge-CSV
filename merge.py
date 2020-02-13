@@ -249,7 +249,7 @@ try:
             print("Refrence not Found Count %s" % Duplicate_Not_Found_error)
             Duplicate_Not_Found_error = 0
             export(MERGED_RECORDS)
-            CHUNK = CHUNK + CHUNK
+            CHUNK = CHUNK + 200
             MERGED_RECORDS = MERGED_RECORDS.iloc[0:0]
             check_memory(CHUNK)
         printProgressBar(
