@@ -66,14 +66,15 @@ def __create_folder(FOLDER, SUBFOLDER):
 
 
 def read(file_name):
-    encoding_europ = "ISO-8859-1"
+    encoding_europe = "ISO-8859-1"
     encoding_default = "utf8"
     try:
         return pd.read_csv(
             file_name, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_default)
     except:
+        print("Fallback to europe Encoding")
         return pd.read_csv(
-            file_name, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_europ)
+            file_name, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_europe)
 
 
 def save(file_name, data):

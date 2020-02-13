@@ -163,6 +163,10 @@ read_start = time.time()
 
 # helper variables
 child_coluums = CHILD_RECORDS.columns
+DUPLICATE_RECORDS_FOUND = pd.DataFrame(columns=child_coluums)
+
+FOUND_INDEXS = []
+
 try:
     for master_id in MASTER_RECORDS.index:
         CHUNK_INDEX = CHUNK_INDEX + 1
@@ -172,6 +176,11 @@ try:
             child_record_ref = CHILD_RECORDS.loc[master_id]
             if type(child_record_ref) == pd.core.frame.DataFrame:
                 child_record_ref = child_record_ref.iloc[0, :]
+
+            # removing found record commenting for large data set
+            FOUND_INDEXS.append(master_id)
+            # CHILD_RECORDS = CHILD_RECORDS.drop(
+            #    child_record_ref[CHILD_ORG_REF_FIELD], axis=0,)
 
             # comparing each cell value based on header
             for field_name in child_coluums:
@@ -205,6 +214,10 @@ try:
                 master_record_ref, ignore_index=True)
         # writing data to csv in chunks of 200 records to reduce memory
         if CHUNK_INDEX == len(MASTER_RECORDS.index):
+            if len(FOUND_INDEXS) > 0:
+                CHILD_RECORDS.drop(FOUND_INDEXS, axis=0, inplace=True)
+                FOUND_INDEXS[:] = []
+
             print("\n")
             read_end = time.time()
             print("CHUNK COUNT => %s " % CHUNK_INDEX)
@@ -213,6 +226,7 @@ try:
             print("Refrence not Found Count %s" % Duplicate_Not_Found_error)
             print("Remaing Child records %s" % len(CHILD_RECORDS))
             Duplicate_Not_Found_error = 0
+
             if MERGE_TYPE == "outer":
                 temp = {FIELD_NAME_TO_STORE_SOURCE: "Child"}
                 CHILD_RECORDS = CHILD_RECORDS.assign(**temp)
@@ -222,6 +236,10 @@ try:
             MERGED_RECORDS = MERGED_RECORDS.iloc[0:0]
             check_memory(CHUNK_INDEX)
         elif CHUNK_INDEX == CHUNK:
+            if len(FOUND_INDEXS) > 0:
+                CHILD_RECORDS.drop(FOUND_INDEXS, axis=0, inplace=True)
+                FOUND_INDEXS[:] = []
+
             print("\n")
             read_end = time.time()
             print("CHUNK COUNT => %s " % CHUNK)
