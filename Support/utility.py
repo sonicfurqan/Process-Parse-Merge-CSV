@@ -9,6 +9,7 @@ import pandas as pd
 # Deifineing Variabled
 FOLDER = "Data/"
 CHUNK = 200
+BATCH=200
 MERGEFOLDER = "MERGE/"
 VLOOKUPFOLDER = "VLOOKUP/"
 # Clear Merory

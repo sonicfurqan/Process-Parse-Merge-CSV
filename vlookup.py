@@ -17,7 +17,7 @@ from parameters import (
 )
 
 # importing methods
-from Support.utility import check_memory, read_file, save, VLOOKUPFOLDER, printProgressBar, FOLDER, CHUNK
+from Support.utility import check_memory, read_file, save, VLOOKUPFOLDER, printProgressBar, FOLDER, CHUNK,BATCH
 
 
 # defineing methods
@@ -160,7 +160,7 @@ try:
             print("Refrence not Found Count %s" % Lookup_not_found)
             Lookup_not_found = 0
             export(PROCESSED_RECORDS)
-            CHUNK = CHUNK + CHUNK
+            CHUNK = CHUNK + BATCH
             PROCESSED_RECORDS = PROCESSED_RECORDS.iloc[0:0]
             check_memory(CHUNK)
         printProgressBar(

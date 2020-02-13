@@ -10,7 +10,7 @@ import traceback
 
 
 # importing methods
-from Support.utility import check_memory, read_file, printProgressBar, FOLDER, MERGEFOLDER, CHUNK, save
+from Support.utility import check_memory, read_file, printProgressBar, FOLDER, MERGEFOLDER, CHUNK,BATCH, save
 
 # importing fileds
 from parameters import (
@@ -249,7 +249,7 @@ try:
             print("Refrence not Found Count %s" % Duplicate_Not_Found_error)
             Duplicate_Not_Found_error = 0
             export(MERGED_RECORDS)
-            CHUNK = CHUNK + 200
+            CHUNK = CHUNK + BATCH
             MERGED_RECORDS = MERGED_RECORDS.iloc[0:0]
             check_memory(CHUNK)
         printProgressBar(
