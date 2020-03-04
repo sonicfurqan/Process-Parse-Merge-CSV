@@ -10,7 +10,7 @@ import traceback
 
 
 # importing methods
-from Support.utility import check_memory, read_file, printProgressBar, FOLDER, MERGEFOLDER, CHUNK,BATCH, save
+from Support.utility import check_memory, read_file, printProgressBar, FOLDER, MERGEFOLDER, CHUNK, BATCH, save
 
 # importing fileds
 from parameters import (
@@ -32,11 +32,11 @@ FIELD_NAME_TO_STORE_SOURCE = COLOUM_NAME_WHERE_RECORD_SOURCE_TO_BE_STORED
 MERGE_TYPE = MERGE
 OVERRIDE_MASTERDATA = OVERRIDE
 # parameters for processing csv
-MERGEHEADERS = True
-DROPEMPTYHEADERS = True
+MERGEHEADERS = False
+DROPEMPTYHEADERS = False
 DATACLEANUP = True
 DROPEMPTYROWS = True
-
+ADDSOURCEFIELD = True
 
 # defineing functions
 
@@ -44,6 +44,7 @@ DROPEMPTYROWS = True
 def merge_header(master_csv, child_csv):
     master_colums = master_csv.columns
     child_colums = child_csv.columns
+
     unique_in_child = child_colums[~child_colums.isin(master_colums)]
     print("---------Header Details-----------------")
     print("%s columns form child are added to master" % len(unique_in_child))
@@ -72,10 +73,12 @@ def read(object_name):
         child_data.dropna(axis=0, how="all", inplace=True)
     if MERGEHEADERS:
         master_data, child_data = merge_header(master_data, child_data)
-    master_coloum = {FIELD_NAME_TO_STORE_SOURCE: "Master"}
-    child_coloum = {FIELD_NAME_TO_STORE_SOURCE: "Child"}
-    master_data = master_data.assign(**master_coloum)
-    child_data = child_data.assign(**child_coloum)
+    else:
+        fields_not_in_master = child_data.columns[~child_data.columns.isin(
+            master_data.columns)]
+        fields_not_in_master = fields_not_in_master[~fields_not_in_master.isin([
+            CHILD_KEY_FIELD])]
+        child_data.drop(fields_not_in_master, axis=1, inplace=True)
     read_end = time.time()
     print("---------CSV Details-----------------")
     print("Master Header count=>", len(master_data.columns))
@@ -84,7 +87,11 @@ def read(object_name):
     print("child rows count=>", len(child_data.index))
     print("Reading CSV took %.2f seconds" % (read_end-read_start))
     print("--------------------------")
-
+    if ADDSOURCEFIELD:
+        master_coloum = {FIELD_NAME_TO_STORE_SOURCE: "Master"}
+        child_coloum = {FIELD_NAME_TO_STORE_SOURCE: "Child"}
+        master_data = master_data.assign(**master_coloum)
+        child_data = child_data.assign(**child_coloum)
     check_memory(1)
     return (
         master_data[master_data[PARENT_ORG_UNIQUE_FILED].isna()
@@ -125,6 +132,7 @@ MASTER_RECORDS_UNIQUES, MASTER_RECORDS, CHILD_RECORDS_UNIQUES, CHILD_RECORDS = r
 )
 MERGED_RECORDS = pd.DataFrame(columns=MASTER_RECORDS.columns)
 LOG = pd.DataFrame(columns=["REF KEY", "ORIGIN", "Comment"])
+
 print("---------Dataframe Details-----------------")
 print("Master Non indexed rows count=>", len(MASTER_RECORDS_UNIQUES))
 print("Master rows count=>", len(MASTER_RECORDS))
@@ -162,8 +170,10 @@ Duplicate_Not_Found_error = 0
 read_start = time.time()
 
 # helper variables
-child_coluums = CHILD_RECORDS.columns
-DUPLICATE_RECORDS_FOUND = pd.DataFrame(columns=child_coluums)
+
+
+child_coluums = CHILD_RECORDS.columns[~CHILD_RECORDS.columns.isin([
+                                                                  CHILD_KEY_FIELD])]
 
 FOUND_INDEXS = []
 
@@ -189,7 +199,7 @@ try:
                         master_record_ref[field_name] = child_record_ref[field_name]
                     elif pd.isnull(master_record_ref[field_name]):
                         master_record_ref[field_name] = child_record_ref[field_name]
-        except KeyError:
+        except KeyError as e:
             isMatch = False
             Duplicate_Not_Found_error = Duplicate_Not_Found_error + 1
             LOG = LOG.append(
@@ -203,15 +213,18 @@ try:
             log(LOG)
             LOG = LOG.iloc[0:0]
         if MERGE_TYPE == "outer":
-            master_record_ref[FIELD_NAME_TO_STORE_SOURCE] = (
-                isMatch and "Master/Child" or "Master"
-            )
+            if ADDSOURCEFIELD:
+                master_record_ref[FIELD_NAME_TO_STORE_SOURCE] = (
+                    isMatch and "Master/Child" or "Master"
+                )
             MERGED_RECORDS = MERGED_RECORDS.append(
                 master_record_ref, ignore_index=True)
         elif isMatch:
-            master_record_ref[FIELD_NAME_TO_STORE_SOURCE] = "Master/Child"
+            if ADDSOURCEFIELD:
+                master_record_ref[FIELD_NAME_TO_STORE_SOURCE] = "Master/Child"
             MERGED_RECORDS = MERGED_RECORDS.append(
                 master_record_ref, ignore_index=True)
+
         # writing data to csv in chunks of 200 records to reduce memory
         if CHUNK_INDEX == len(MASTER_RECORDS.index):
             if len(FOUND_INDEXS) > 0:
@@ -228,8 +241,9 @@ try:
             Duplicate_Not_Found_error = 0
 
             if MERGE_TYPE == "outer":
-                temp = {FIELD_NAME_TO_STORE_SOURCE: "Child"}
-                CHILD_RECORDS = CHILD_RECORDS.assign(**temp)
+                if ADDSOURCEFIELD:
+                    temp = {FIELD_NAME_TO_STORE_SOURCE: "Child"}
+                    CHILD_RECORDS = CHILD_RECORDS.assign(**temp)
                 MERGED_RECORDS = MERGED_RECORDS.append(
                     CHILD_RECORDS, ignore_index=True)
             export(MERGED_RECORDS)

@@ -2,9 +2,9 @@
 VALUES_TO_BE_REPLACED_BY_NULL = ["unassigned", "N/A", " ", "", "nan"]
 ######################################################################
 # Merge File Parameters
-FILE_NAME = "Contact"
-PARENT_KEY_FILED = "ID"
-CHILD_KEY_FIELD = "EXT_ID__C"
+FILE_NAME = "Example"
+PARENT_KEY_FILED = "Id"
+CHILD_KEY_FIELD = "EXT_Id"
 COLOUM_NAME_WHERE_RECORD_SOURCE_TO_BE_STORED = "SOURCE"
 # Supports only inner or outer if not correct value defaults to inner
 MERGE = "outer"
