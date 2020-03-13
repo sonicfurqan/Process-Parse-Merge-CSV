@@ -1,32 +1,50 @@
-# importing dependency
 import psutil
 import gc
-import os
-import time
 import pandas as pd
+import os
 
 
-# Deifineing Variabled
-FOLDER = "Data/"
-CHUNK = 200
-BATCH=2000
-MERGEFOLDER = "MERGE/"
-VLOOKUPFOLDER = "VLOOKUP/"
-# Clear Merory
+def read(file_name, additional_na_values):
+    encoding_europe = "ISO-8859-1"
+    encoding_default = "utf8"
+    try:
+        return pd.read_csv(
+            file_name, index_col=False, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_default, na_values=additional_na_values)
+    except:
+        print("Fallback to europe Encoding")
+        return pd.read_csv(
+            file_name, index_col=False, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_europe,  na_values=additional_na_values)
 
 
-def __clean():
-    n = gc.collect()
-    print("--------------------------")
-    print("Unreachable objects:", n)
-    print("Remaining Garbage:", gc.garbage)
+def clean_dataframe(file):
+    new_file = file.dropna(axis=1, how="all")  # Delete all empty columns
+    new_file = new_file.dropna(axis=0, how="all")  # Delete all empty rows
+    return new_file
 
+
+def add_header(file, header_name, value):
+    # Add new Coloum with Value to file
+    column = {header_name: value}
+    return file.assign(**column)
+
+
+def create_file(file, fileName, location):
+    # Create a direcotry and file
+    os.makedirs(location, exist_ok=True)
+    file.to_csv(location+'/'+fileName, index=False, mode="w")
+
+
+def append_to_file(dataframe, fileName, location):
+    dataframe.to_csv(
+        location+'/'+fileName, index=False, mode="a", header=False
+    )
 
 # Check Memory Consuption
 
 
 def check_memory(number):
-    __clean()
+    print("--------------------------")
+    gc.collect()
     print(
         "SEQUENCE => %d" % number,
         "MEMORY USED => %f Percent" % psutil.virtual_memory().percent,
@@ -57,37 +75,3 @@ def printProgressBar(
     # Print New Line on Complete
     if iteration == total:
         print()
-
-
-def __create_folder(FOLDER, SUBFOLDER):
-    os.makedirs(FOLDER + SUBFOLDER + "/Parent", exist_ok=True)
-    os.makedirs(FOLDER + SUBFOLDER + "/Child", exist_ok=True)
-    os.makedirs(FOLDER + SUBFOLDER + "/Result", exist_ok=True)
-    os.makedirs(FOLDER + SUBFOLDER + "/Log", exist_ok=True)
-
-
-def read(file_name):
-    encoding_europe = "ISO-8859-1"
-    encoding_default = "utf8"
-    try:
-        return pd.read_csv(
-            file_name, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_default)
-    except:
-        print("Fallback to europe Encoding")
-        return pd.read_csv(
-            file_name, skip_blank_lines=True, sep=",", dtype=object, encoding=encoding_europe)
-
-
-def save(file_name, data):
-    data.to_csv(
-        file_name, index=False, mode="a", header=False
-    )
-
-
-def read_file(FOLDER, SUBFOLDER, file_name):
-    __create_folder(FOLDER, SUBFOLDER)
-    master_csv = FOLDER + SUBFOLDER + "Parent/" + file_name + ".csv"
-    child_csv = FOLDER + SUBFOLDER + "Child/" + file_name + ".csv"
-    master_data = read(master_csv)
-    child_data = read(child_csv)
-    return master_data, child_data

@@ -125,11 +125,4 @@ dmypy.json
 .vscode
 
 #File
-Data/MERGE/Child/Contact.csv
-Data/MERGE/Parent/Contact.csv
-Data/MERGE/Log/Contact.csv
-Data/MERGE/Result/Contact.csv
-Data/VLOOKUP/Child/Account.csv
-Data/VLOOKUP/Parent/Account.csv
-Data/VLOOKUP/Log/Account.csv
-Data/VLOOKUP/Result/Contact.csv
+/test
