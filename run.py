@@ -109,7 +109,9 @@ elif VLOOKUP:
     print("VLOOKUP is disabled as VLOOKUP is True")
     REPLACE_DIFFERENCE = False
     MERGE_DATA = False
-"""
+    OUTER_JOIN = False
+    ADD_SOURCE_COLUMN = False
+
 # Reading File
 master_data = read(master_file_location,
                    VALUES_TO_BE_REPLACED_BY_NULL)
@@ -279,4 +281,3 @@ for master_id in master_data.index:
     printProgressBar(
         Itration_count, Itration_total, length=50,
     )
-"""
